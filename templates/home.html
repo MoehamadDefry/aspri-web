@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}
+Home - ASPRI
+{% endblock %}
+
+
+{% block content %}
+
+<div class="page-header">
+
+    <h2>
+        Sistem Prediksi
+        <span class="text-primary">
+            Performa Siswa
+        </span>
+    </h2>
+
+    <p>
+        Menganalisis performa siswa berdasarkan nilai,
+        kehadiran, dan aktivitas belajar menggunakan
+        machine learning.
+    </p>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- FITUR UTAMA -->
+<!-- ========================= -->
+
+<div class="mb-4">
+
+    <h4 class="fw-bold">
+        Fitur Utama
+    </h4>
+
+</div>
+
+
+<div class="row g-4">
+
+
+    <!-- PREPROCESSING -->
+
+    <div class="col-md-4">
+
+        <div class="card feature-card h-100 shadow-sm border-0">
+
+            <div class="card-body p-4">
+
+                <div class="feature-icon">
+                    <i class="bi bi-gear"></i>
+                </div>
+
+                <h5 class="fw-bold mt-3">
+                    Preprocessing
+                </h5>
+
+                <p class="text-muted mb-0">
+                    Persiapan data sebelum analisis.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ANALISIS -->
+
+    <div class="col-md-4">
+
+        <div class="card feature-card h-100 shadow-sm border-0">
+
+            <div class="card-body p-4">
+
+                <div class="feature-icon">
+                    <i class="bi bi-bar-chart"></i>
+                </div>
+
+                <h5 class="fw-bold mt-3">
+                    Analisis
+                </h5>
+
+                <p class="text-muted mb-0">
+                    Eksplorasi dan visualisasi data.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- PREDIKSI -->
+
+    <div class="col-md-4">
+
+        <div class="card feature-card h-100 shadow-sm border-0">
+
+            <div class="card-body p-4">
+
+                <div class="feature-icon">
+                    <i class="bi bi-bullseye"></i>
+                </div>
+
+                <h5 class="fw-bold mt-3">
+                    Prediksi
+                </h5>
+
+                <p class="text-muted mb-0">
+                    Klasifikasi performa siswa.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+{% endblock %}

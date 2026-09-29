@@ -1,0 +1,237 @@
+/* =========================
+   GLOBAL
+========================= */
+
+body {
+    margin: 0;
+    background-color: #f5f7fa;
+    color: #212529;
+    font-family: Arial, sans-serif;
+}
+
+
+/* =========================
+   APP WRAPPER
+========================= */
+
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar {
+    width: 250px;
+    min-height: 100vh;
+    background-color: #ffffff;
+    border-right: 1px solid #e9ecef;
+    padding: 24px 18px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+}
+
+
+/* BRAND */
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+
+.brand-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: #0d6efd;
+    color: white;
+
+    border-radius: 10px;
+
+    font-size: 20px;
+}
+
+
+.brand-title {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+
+.sidebar-brand small {
+    color: #6c757d;
+    font-size: 11px;
+}
+
+
+/* =========================
+   SIDEBAR MENU
+========================= */
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 11px 14px;
+
+    color: #495057;
+    text-decoration: none;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+
+    transition: 0.2s;
+}
+
+
+.sidebar-link i {
+    font-size: 17px;
+}
+
+
+.sidebar-link:hover {
+    background-color: #f1f3f5;
+    color: #0d6efd;
+}
+
+
+.sidebar-link.active {
+    background-color: #0d6efd;
+    color: white;
+    font-weight: 600;
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+.main-wrapper {
+    margin-left: 250px;
+
+    width: calc(100% - 250px);
+
+    min-height: 100vh;
+}
+
+
+/* =========================
+   TOPBAR
+========================= */
+
+.topbar {
+    height: 70px;
+
+    background-color: white;
+
+    border-bottom: 1px solid #e9ecef;
+
+    display: flex;
+
+    align-items: center;
+
+    padding: 0 32px;
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 100;
+}
+
+
+/* =========================
+   CONTENT
+========================= */
+
+.content {
+    padding: 35px;
+}
+
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+
+.page-header h2 {
+    font-weight: 700;
+}
+
+
+.page-header p {
+    color: #6c757d;
+    margin-top: 8px;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
+
+    .sidebar {
+        width: 210px;
+    }
+
+    .main-wrapper {
+        margin-left: 210px;
+        width: calc(100% - 210px);
+    }
+
+    .content {
+        padding: 20px;
+    }
+
+}
+
+/* =========================
+   HOME
+========================= */
+
+.feature-card {
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-3px);
+}
+
+.feature-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: #e9f2ff;
+    color: #0d6efd;
+
+    border-radius: 10px;
+
+    font-size: 22px;
+}

@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}
+Upload Data - ASPRI
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h2>
+        <i class="bi bi-cloud-arrow-up me-2"></i>
+        Upload Dataset
+    </h2>
+
+    <p>
+        Unggah dataset siswa dalam format Excel untuk
+        dilakukan analisis.
+    </p>
+
+</div>
+
+
+<!-- DOWNLOAD TEMPLATE -->
+
+<div class="card border-0 shadow-sm mb-4">
+
+    <div class="card-body p-4">
+
+        <div class="d-flex align-items-center justify-content-between">
+
+            <div>
+
+                <h5 class="fw-bold mb-1">
+                    Template Dataset
+                </h5>
+
+                <p class="text-muted mb-0">
+                    Gunakan template yang telah disediakan
+                    untuk memastikan format data sesuai.
+                </p>
+
+            </div>
+
+            <a href="#" class="btn btn-outline-primary">
+                <i class="bi bi-download me-2"></i>
+                Download Template
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- UPLOAD -->
+
+<div class="card border-0 shadow-sm mb-4">
+
+    <div class="card-body p-4">
+
+        <h5 class="fw-bold mb-3">
+            Upload File Excel
+        </h5>
+
+
+        <form action="{{ url_for('upload_data') }}" method="POST" enctype="multipart/form-data">
+
+            <div class="mb-3">
+
+                <label for="dataset" class="form-label">
+                    File Dataset
+                </label>
+
+                <input type="file" class="form-control" id="dataset" name="dataset" accept=".xlsx,.xls" required>
+
+                <div class="form-text">
+                    Format yang didukung: .xlsx dan .xls
+                </div>
+
+            </div>
+
+
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-upload me-2"></i>
+                Upload Dataset
+            </button>
+
+        </form>
+        {% if error %}
+
+        <div class="alert alert-danger d-flex align-items-center mt-4">
+
+            <i class="bi bi-exclamation-circle me-2"></i>
+
+            <div>
+                {{ error }}
+            </div>
+
+        </div>
+
+        {% endif %}
+
+
+        {% if success %}
+
+        <div class="alert alert-success d-flex align-items-center mt-4">
+
+            <i class="bi bi-check-circle me-2"></i>
+
+            <div>
+                Data berhasil diupload.
+            </div>
+
+        </div>
+
+
+        <div class="card border-0 shadow-sm mt-4">
+
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                    <div>
+
+                        <h5 class="fw-bold mb-1">
+                            Data Awal
+                        </h5>
+
+                        <p class="text-muted mb-0">
+                            Menampilkan data yang berhasil diunggah.
+                        </p>
+
+                    </div>
+
+
+                    <span class="badge text-bg-primary">
+                        {{ total_data }} Data
+                    </span>
+
+                </div>
+
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover table-bordered align-middle">
+
+                        <thead class="table-light">
+
+                            <tr>
+
+                                {% for column in columns %}
+
+                                <th>
+                                    {{ column }}
+                                </th>
+
+                                {% endfor %}
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for row in data[:10] %}
+
+                            <tr>
+
+                                {% for column in columns %}
+
+                                <td>
+                                    {{ row[column] }}
+                                </td>
+
+                                {% endfor %}
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                {% if total_data > 10 %}
+
+                <div class="text-muted small mt-2">
+
+                    Menampilkan 10 data pertama dari
+                    {{ total_data }} data.
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

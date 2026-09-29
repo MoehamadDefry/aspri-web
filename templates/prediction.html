@@ -1,0 +1,545 @@
+{% extends "base.html" %}
+
+{% block title %}Hasil Prediksi - ASPRI{% endblock %}
+
+{% block content %}
+
+<div class="page-header mb-4">
+    <h2><i class="bi bi-bar-chart me-2"></i>Hasil Prediksi</h2>
+    <p>Menampilkan hasil klasifikasi prestasi siswa berdasarkan model Categorical Naive Bayes.</p>
+</div>
+
+{% if error %}
+<div class="alert alert-warning d-flex align-items-center mb-4">
+    <i class="bi bi-exclamation-circle me-2"></i>
+    <span>{{ error }}</span>
+</div>
+{% elif not prediction_ready %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-5 text-center">
+        <div class="empty-icon mb-3">
+            <i class="bi bi-bar-chart-line"></i>
+        </div>
+        <h5 class="fw-bold">Hasil prediksi belum tersedia</h5>
+        <p class="text-muted mb-4">
+            Jalankan proses analisis terlebih dahulu agar model dapat digunakan
+            untuk memprediksi prestasi siswa.
+        </p>
+        <a href="{{ url_for('process_analysis') }}" class="btn btn-primary">
+            <i class="bi bi-gear me-1"></i>
+            Buka Proses & Analisis
+        </a>
+    </div>
+</div>
+{% else %}
+
+<!-- RINGKASAN -->
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="stat-card h-100">
+            <span>Total Siswa</span>
+            <strong>{{ total_prediction }}</strong>
+            <small>Data yang diprediksi</small>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card h-100">
+            <span>Prediksi Tinggi</span>
+            <strong>{{ prediction_counts['Tinggi'] }}</strong>
+            <small>Kategori prestasi tinggi</small>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card h-100">
+            <span>Prediksi Sedang</span>
+            <strong>{{ prediction_counts['Sedang'] }}</strong>
+            <small>Kategori prestasi sedang</small>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card h-100">
+            <span>Prediksi Rendah</span>
+            <strong>{{ prediction_counts['Rendah'] }}</strong>
+            <small>Kategori yang perlu perhatian</small>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- DISTRIBUSI HASIL PREDIKSI -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+
+        <h5 class="fw-bold mb-1">
+            <i class="bi bi-pie-chart me-2"></i>
+            Distribusi Hasil Prediksi
+        </h5>
+
+        <p class="text-muted mb-3">
+            Distribusi kategori prestasi berdasarkan hasil klasifikasi model.
+        </p>
+
+        <div class="chart-box">
+            <canvas id="predictionChart"></canvas>
+        </div>
+
+        <div class="table-responsive mt-3">
+            <table class="table table-sm table-bordered mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Kategori</th>
+                        <th>Jumlah Siswa</th>
+                        <th>Persentase</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for label in ['Tinggi', 'Sedang', 'Rendah'] %}
+                    <tr>
+                        <td>{{ label }}</td>
+                        <td>{{ prediction_counts[label] }}</td>
+                        <td>
+                            {% if total_prediction %}
+                            {{ '%.2f'|format((prediction_counts[label] / total_prediction) * 100) }}%
+                            {% else %}
+                            0.00%
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- INTERPRETASI -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+
+        <h5 class="fw-bold mb-1">
+            <i class="bi bi-info-circle me-2"></i>
+            Ringkasan Hasil Prediksi
+        </h5>
+
+        <p class="text-muted mb-3">
+            Ringkasan jumlah siswa berdasarkan kategori hasil prediksi.
+        </p>
+
+        <div class="alert alert-light border mb-0">
+            Berdasarkan hasil klasifikasi model, terdapat
+            <strong>{{ prediction_counts['Tinggi'] }}</strong> siswa dengan prediksi
+            <strong>Tinggi</strong>,
+            <strong>{{ prediction_counts['Sedang'] }}</strong> siswa dengan prediksi
+            <strong>Sedang</strong>, dan
+            <strong>{{ prediction_counts['Rendah'] }}</strong> siswa dengan prediksi
+            <strong>Rendah</strong>.
+        </div>
+
+    </div>
+</div>
+
+
+<!-- SISWA YANG PERLU PERHATIAN -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <div>
+                <h5 class="fw-bold mb-1">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Siswa yang Perlu Perhatian
+                </h5>
+                <p class="text-muted mb-0">
+                    Daftar siswa dengan hasil prediksi prestasi Rendah.
+                </p>
+            </div>
+
+            <span class="badge text-bg-warning">
+                {{ risk_students|length }} Siswa
+            </span>
+        </div>
+
+        {% if risk_students %}
+        <div class="table-responsive mt-3">
+            <table class="table table-hover table-bordered align-middle small">
+                <thead class="table-light">
+                    <tr>
+                        {% for c in risk_columns %}
+                        <th>{{ c|replace('_', ' ')|title }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in risk_students %}
+                    <tr>
+                        {% for c in risk_columns %}
+                        <td>
+                            {% if c == 'hasil_prediksi' %}
+                            <span class="badge text-bg-danger">{{ row[c] }}</span>
+                            {% else %}
+                            {{ row[c] }}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION SISWA PERLU PERHATIAN -->
+        {% if total_risk_pages > 1 %}
+        <nav class="mt-3" aria-label="Pagination siswa yang perlu perhatian">
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+
+                <!-- PREVIOUS -->
+                <li class="page-item {% if risk_page <= 1 %}disabled{% endif %}">
+                    {% if risk_page > 1 %}
+                    <a class="page-link"
+                        href="{{ url_for('prediction', page=prediction_page, risk_page=risk_page - 1) }}">
+                        &laquo;
+                    </a>
+                    {% else %}
+                    <span class="page-link">&laquo;</span>
+                    {% endif %}
+                </li>
+
+                <!-- HALAMAN SAAT INI -->
+                <li class="page-item active">
+                    <span class="page-link">
+                        {{ risk_page }}
+                    </span>
+                </li>
+
+                <!-- INFO TOTAL -->
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        dari {{ total_risk_pages }}
+                    </span>
+                </li>
+
+                <!-- NEXT -->
+                <li class="page-item {% if risk_page >= total_risk_pages %}disabled{% endif %}">
+                    {% if risk_page < total_risk_pages %} <a class="page-link"
+                        href="{{ url_for('prediction', page=prediction_page, risk_page=risk_page + 1) }}">
+                        &raquo;
+                        </a>
+                        {% else %}
+                        <span class="page-link">&raquo;</span>
+                        {% endif %}
+                </li>
+
+            </ul>
+        </nav>
+        {% endif %}
+
+        <div class="text-muted small text-center mt-2">
+            Menampilkan
+            {{ ((risk_page - 1) * risk_per_page) + 1 }}
+            -
+            {{ ((risk_page - 1) * risk_per_page) + risk_students|length }}
+            dari
+            {{ total_risk_students }}
+            siswa
+        </div>
+
+
+        {% else %}
+        <div class="alert alert-success mt-3 mb-0">
+            <i class="bi bi-check-circle me-2"></i>
+            Tidak terdapat siswa dengan hasil prediksi Rendah.
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+
+<!-- SEMUA HASIL PREDIKSI -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+
+        <h5 class="fw-bold mb-1">
+            <i class="bi bi-table me-2"></i>
+            Seluruh Hasil Prediksi
+        </h5>
+
+        <p class="text-muted mb-3">
+            Hasil klasifikasi setiap siswa beserta rekomendasi tindak lanjut.
+        </p>
+
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle small">
+                <thead class="table-light">
+                    <tr>
+                        {% for c in prediction_columns %}
+                        <th>{{ c|replace('_', ' ')|title }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in predictions %}
+                    <tr>
+                        {% for c in prediction_columns %}
+                        <td>
+                            {% if c == 'hasil_prediksi' %}
+                            {% if row[c] == 'Tinggi' %}
+                            <span class="badge text-bg-success">{{ row[c] }}</span>
+                            {% elif row[c] == 'Sedang' %}
+                            <span class="badge text-bg-warning">{{ row[c] }}</span>
+                            {% else %}
+                            <span class="badge text-bg-danger">{{ row[c] }}</span>
+                            {% endif %}
+                            {% else %}
+                            {{ row[c] }}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION HASIL PREDIKSI -->
+        {% if total_prediction_pages > 1 %}
+
+        <nav class="mt-3" aria-label="Pagination hasil prediksi">
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+
+                <!-- PREVIOUS -->
+                <li class="page-item {% if prediction_page <= 1 %}disabled{% endif %}">
+                    {% if prediction_page > 1 %}
+                    <a class="page-link"
+                        href="{{ url_for('prediction', page=prediction_page - 1, risk_page=risk_page) }}">
+                        &laquo;
+                    </a>
+                    {% else %}
+                    <span class="page-link">&laquo;</span>
+                    {% endif %}
+                </li>
+
+                <!-- NOMOR HALAMAN DENGAN ELLIPSIS -->
+
+                {# Halaman 1 #}
+                <li class="page-item {% if prediction_page == 1 %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('prediction', page=1, risk_page=risk_page) }}">
+                        1
+                    </a>
+                </li>
+
+                {# Ellipsis kiri #}
+                {% if prediction_page > 4 %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+                {% endif %}
+
+                {# Halaman sekitar halaman aktif #}
+                {% for p in range(
+                [2, prediction_page - 1]|max,
+                [total_prediction_pages, prediction_page + 1]|min + 1
+                ) %}
+
+                {% if p > 1 and p < total_prediction_pages %} <li
+                    class="page-item {% if p == prediction_page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('prediction', page=p, risk_page=risk_page) }}">
+                        {{ p }}
+                    </a>
+                    </li>
+
+                    {% endif %}
+
+                    {% endfor %}
+
+                    {# Ellipsis kanan #}
+                    {% if prediction_page < total_prediction_pages - 3 %} <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+
+                        {# Halaman terakhir #}
+                        {% if total_prediction_pages > 1 %}
+                        <li class="page-item {% if prediction_page == total_prediction_pages %}active{% endif %}">
+                            <a class="page-link"
+                                href="{{ url_for('prediction', page=total_prediction_pages, risk_page=risk_page) }}">
+                                {{ total_prediction_pages }}
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <!-- NEXT -->
+                        <li class="page-item {% if prediction_page >= total_prediction_pages %}disabled{% endif %}">
+                            {% if prediction_page < total_prediction_pages %} <a class="page-link"
+                                href="{{ url_for('prediction', page=prediction_page + 1, risk_page=risk_page) }}">
+                                &raquo;
+                                </a>
+                                {% else %}
+                                <span class="page-link">&raquo;</span>
+                                {% endif %}
+                        </li>
+
+            </ul>
+        </nav>
+
+        <div class="text-muted small text-center mt-2">
+            Menampilkan
+            {{ ((prediction_page - 1) * prediction_per_page) + 1 }}
+            -
+            {{ ((prediction_page - 1) * prediction_per_page) + predictions|length }}
+            dari
+            {{ total_prediction }}
+            siswa
+        </div>
+
+        {% endif %}
+
+    </div>
+</div>
+
+
+<!-- DOWNLOAD -->
+<div class="card border-0 shadow-sm mb-5">
+    <div class="card-body p-4">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h5 class="fw-bold mb-1">
+                    <i class="bi bi-download me-2"></i>
+                    Export Hasil Prediksi
+                </h5>
+                <p class="text-muted mb-0">
+                    Unduh hasil prediksi dan rekomendasi dalam format Excel.
+                </p>
+            </div>
+
+            {% if download_url %}
+            <a href="{{ download_url }}" class="btn btn-success">
+                <i class="bi bi-file-earmark-excel me-1"></i>
+                Download Excel
+            </a>
+            {% else %}
+            <button type="button" class="btn btn-success" disabled>
+                <i class="bi bi-file-earmark-excel me-1"></i>
+                Download Excel
+            </button>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+{% endif %}
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% if prediction_ready %}
+<script>
+    const predictionCounts = {{ prediction_counts | tojson }};
+
+    new Chart(document.getElementById('predictionChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Tinggi', 'Sedang', 'Rendah'],
+            datasets: [{
+                label: 'Jumlah Siswa',
+                data: [
+                    predictionCounts.Tinggi || 0,
+                    predictionCounts.Sedang || 0,
+                    predictionCounts.Rendah || 0
+                ],
+                backgroundColor: [
+                    '#198754',
+                    '#ffc107',
+                    '#dc3545'
+                ],
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endif %}
+
+
+<style>
+    .stat-card {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 18px;
+    }
+
+    .stat-card span {
+        display: block;
+        color: #6c757d;
+        font-size: 13px;
+    }
+
+    .stat-card strong {
+        display: block;
+        font-size: 28px;
+        margin-top: 5px;
+        color: #212529;
+    }
+
+    .stat-card small {
+        display: block;
+        color: #6c757d;
+        margin-top: 3px;
+    }
+
+    .chart-box {
+        position: relative;
+        height: 320px;
+    }
+
+    .empty-icon {
+        width: 64px;
+        height: 64px;
+        margin-left: auto;
+        margin-right: auto;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f1f3f5;
+        font-size: 28px;
+        color: #6c757d;
+    }
+
+    .table th {
+        white-space: nowrap;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+</style>
+
+{% endblock %}
