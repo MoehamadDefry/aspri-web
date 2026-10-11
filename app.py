@@ -536,6 +536,53 @@ def prediction_download():
 
 
 # =========================
+# DOWNLOAD TEMPLATE DATASET
+# =========================
+@app.route("/download-template")
+def download_template():
+
+    # Kolom yang dibutuhkan sistem
+    columns = [
+        "nama",
+        "kelas",
+        "nilai_smt1",
+        "nilai_smt2",
+        "kehadiran",
+        "jumlah_ekskul",
+        "skor_perilaku"
+    ]
+
+    # Buat DataFrame kosong
+    df = pd.DataFrame(columns=columns)
+
+    # Buat file Excel di memory
+    output = BytesIO()
+
+    with pd.ExcelWriter(
+        output,
+        engine="openpyxl"
+    ) as writer:
+
+        df.to_excel(
+            writer,
+            index=False,
+            sheet_name="Dataset"
+        )
+
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="template_dataset_aspri.xlsx",
+        mimetype=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        )
+    )
+
+
+# =========================
 # RUN
 # =========================
 

@@ -16,456 +16,649 @@
 </div>
 {% else %}
 
-<!-- DATA AWAL -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-                <h5 class="fw-bold mb-1">Data Awal</h5>
-                <p class="text-muted mb-0">Dataset yang telah diunggah.</p>
-            </div>
-            <span class="badge text-bg-primary">{{ total_data }} Data</span>
-        </div>
+<!-- =========================================================
+     TAB UTAMA: SETIAP PROSES DIPISAH MENJADI TAB
+     ========================================================= -->
+<div class="card border-0 shadow-sm process-card">
+    <div class="card-body p-3 p-md-4">
 
-        <div class="table-responsive">
-            <table class="table table-hover table-bordered align-middle small">
-                <thead class="table-light">
-                    <tr>
-                        {% for c in original_columns %}<th>{{ c }}</th>{% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in original_data[:10] %}
-                    <tr>
-                        {% for c in original_columns %}<td>{{ row[c] }}</td>{% endfor %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="text-muted small">Menampilkan 10 data pertama dari {{ total_data }} data.</div>
-    </div>
-</div>
-
-<!-- PREPROCESSING -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-4">
-        <div class="section-title-row">
-            <div>
-                <h5 class="fw-bold mb-1"><i class="bi bi-sliders me-2"></i>Preprocessing</h5>
-                <p class="text-muted mb-0">Persiapan dan transformasi data sebelum proses analisis.</p>
-            </div>
-        </div>
-
-        <div class="alert alert-light border mt-3 mb-3">
-            <div class="fw-semibold mb-2">
-                Proses preprocessing dilakukan untuk mempersiapkan data sebelum digunakan
-                dalam analisis dan pemodelan.
-            </div>
-
-            <ul class="mb-0">
-                <li>Konversi data numerik menjadi kategori.</li>
-                <li>Pembentukan skor perilaku berdasarkan indikator perilaku siswa.</li>
-                <li>Penentuan kategori nilai semester, kehadiran, dan ekstrakurikuler.</li>
-                <li>Penentuan label prestasi siswa menjadi Tinggi, Sedang, atau Rendah.</li>
-            </ul>
-        </div>
-
-        <div class="row g-3 mb-3">
-            <div class="col-md-4">
-                <div class="stat-card"><span>Total Data</span><strong>{{ total_data }}</strong></div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-card"><span>Jumlah Fitur</span><strong>{{ feature_count }}</strong></div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-card"><span>Label Output</span><strong>Tinggi / Sedang / Rendah</strong></div>
-            </div>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table table-hover table-bordered align-middle small">
-                <thead class="table-light">
-                    <tr>
-                        {% for c in preprocessing_columns %}<th>{{ c|replace('_',' ')|title }}</th>{% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in preprocessing_preview %}<tr>
-                        {% for c in preprocessing_columns %}<td>{{ row[c] }}</td>{% endfor %}
-                    </tr>{% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- DISTRIBUSI LABEL -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-4">
-        <h5 class="fw-bold"><i class="bi bi-bar-chart me-2"></i>Distribusi Label Prestasi</h5>
-        <p class="text-muted">Distribusi jumlah siswa pada setiap kategori prestasi sebelum proses modeling.</p>
-        <div class="chart-box"><canvas id="labelChart"></canvas></div>
-        <div class="table-responsive mt-3">
-            <table class="table table-sm table-bordered mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Label</th>
-                        <th>Jumlah Data</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for label in ['Tinggi','Sedang','Rendah'] %}<tr>
-                        <td>{{ label }}</td>
-                        <td>{{ label_counts[label] }}</td>
-                    </tr>{% endfor %}
-                </tbody>
-            </table>
-            <div class="alert alert-light border mt-3 mb-0">
-                <strong>Interpretasi:</strong>
-                Kategori <strong>{{ mayoritas_label }}</strong> memiliki jumlah data
-                terbanyak, yaitu <strong>{{ mayoritas_jumlah }}</strong> siswa.
-                Sedangkan kategori <strong>{{ minoritas_label }}</strong> memiliki jumlah
-                data paling sedikit, yaitu <strong>{{ minoritas_jumlah }}</strong> siswa.
-            </div>
-            <div class="alert alert-light border mt-3 mb-0">
-                <strong>Interpretasi:</strong>
-                Kategori dengan jumlah data terbanyak adalah
-                <strong>
-                    {{ ['Tinggi', 'Sedang', 'Rendah'] | sort(attribute='') }}
-                </strong>.
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ANALISIS FAKTOR -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-4">
-        <h5 class="fw-bold"><i class="bi bi-search me-2"></i>Analisis Faktor</h5>
-        <p class="text-muted">Hubungan setiap fitur dengan label prestasi siswa.</p>
-
-        <ul class="nav nav-tabs" id="factorTabs" role="tablist">
-            {% for feature in features %}
+        <ul class="nav nav-tabs process-tabs mb-4" id="processTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link {% if loop.first %}active{% endif %}" data-bs-toggle="tab"
-                    data-bs-target="#factor-{{ loop.index }}" type="button">{{ feature }}</button>
+                <button class="nav-link active" id="data-awal-tab" data-bs-toggle="tab"
+                    data-bs-target="#data-awal" type="button" role="tab">
+                    <i class="bi bi-table me-1"></i> Data Awal
+                </button>
             </li>
-            {% endfor %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="preprocessing-tab" data-bs-toggle="tab"
+                    data-bs-target="#preprocessing" type="button" role="tab">
+                    <i class="bi bi-sliders me-1"></i> Preprocessing
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="distribusi-label-tab" data-bs-toggle="tab"
+                    data-bs-target="#distribusi-label" type="button" role="tab">
+                    <i class="bi bi-bar-chart me-1"></i> Distribusi Label
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="analisis-faktor-tab" data-bs-toggle="tab"
+                    data-bs-target="#analisis-faktor" type="button" role="tab">
+                    <i class="bi bi-search me-1"></i> Analisis Faktor
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="encoding-tab" data-bs-toggle="tab"
+                    data-bs-target="#encoding" type="button" role="tab">
+                    <i class="bi bi-arrow-left-right me-1"></i> Encoding
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="split-tab" data-bs-toggle="tab"
+                    data-bs-target="#split" type="button" role="tab">
+                    <i class="bi bi-diagram-3 me-1"></i> Split Data
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="frekuensi-tab" data-bs-toggle="tab"
+                    data-bs-target="#frekuensi" type="button" role="tab">
+                    <i class="bi bi-table me-1"></i> Frekuensi
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="training-tab" data-bs-toggle="tab"
+                    data-bs-target="#training" type="button" role="tab">
+                    <i class="bi bi-cpu me-1"></i> Training
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="evaluasi-tab" data-bs-toggle="tab"
+                    data-bs-target="#evaluasi" type="button" role="tab">
+                    <i class="bi bi-clipboard-data me-1"></i> Evaluasi
+                </button>
+            </li>
         </ul>
 
-        <div class="tab-content pt-3">
-            {% for feature in features %}
-            <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="factor-{{ loop.index }}">
+        <div class="tab-content" id="processTabsContent">
+
+            <!-- =================================================
+                 1. DATA AWAL
+                 ================================================= -->
+            <div class="tab-pane fade show active" id="data-awal" role="tabpanel"
+                aria-labelledby="data-awal-tab">
+
+                <div class="section-heading">
+                    <h5><i class="bi bi-table me-2"></i>Data Awal</h5>
+                    <p>Dataset yang telah diunggah sebelum dilakukan proses pengolahan.</p>
+                </div>
+
+                <div class="d-flex justify-content-end mb-3">
+                    <span class="badge text-bg-primary">{{ total_data }} Data</span>
+                </div>
+
                 <div class="table-responsive">
-                    <table class="table table-sm table-bordered align-middle">
+                    <table class="table table-hover table-bordered align-middle small mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>{{ feature }}</th>
-                                <th>Tinggi</th>
-                                <th>Sedang</th>
-                                <th>Rendah</th>
+                                {% for c in original_columns %}
+                                <th>{{ c }}</th>
+                                {% endfor %}
                             </tr>
                         </thead>
                         <tbody>
-                            {% for row in factor_analysis[feature]['rows'] %}
+                            {% for row in original_data[:10] %}
                             <tr>
-                                <td>{{ row['category'] }}</td>
-                                <td>{{ '%.2f'|format(row['Tinggi'] * 100) }}%</td>
-                                <td>{{ '%.2f'|format(row['Sedang'] * 100) }}%</td>
-                                <td>{{ '%.2f'|format(row['Rendah'] * 100) }}%</td>
+                                {% for c in original_columns %}
+                                <td>{{ row[c] }}</td>
+                                {% endfor %}
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                <div class="alert alert-light border mb-0">
-                    Kecenderungan kategori: {{ factor_analysis[feature]['dominant'] }}
-                </div>
-                <div class="factor-heatmap mt-3">
-                    <div class="fw-semibold mb-2">
-                        Visualisasi Hubungan Kategori
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-bordered text-center mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Kategori</th>
-                                    <th>Tinggi</th>
-                                    <th>Sedang</th>
-                                    <th>Rendah</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {% for row in factor_analysis[feature]['rows'] %}
-                                <tr>
-                                    <th>{{ row.category }}</th>
-
-                                    <td style="background-color: rgba(13,110,253,{{ row.Tinggi }});">
-                                        {{ '%.2f'|format(row.Tinggi * 100) }}%
-                                    </td>
-
-                                    <td style="background-color: rgba(13,110,253,{{ row.Sedang }});">
-                                        {{ '%.2f'|format(row.Sedang * 100) }}%
-                                    </td>
-
-                                    <td style="background-color: rgba(13,110,253,{{ row.Rendah }});">
-                                        {{ '%.2f'|format(row.Rendah * 100) }}%
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="text-muted small mt-2">
+                    Menampilkan 10 data pertama dari {{ total_data }} data.
                 </div>
             </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
 
-<!-- ENCODING -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-4">
-        <h5 class="fw-bold"><i class="bi bi-arrow-left-right me-2"></i>Encoding</h5>
-        <p class="text-muted">Mengubah data kategorikal menjadi bentuk numerik menggunakan Ordinal Encoding.</p>
+            <!-- =================================================
+                 2. PREPROCESSING
+                 ================================================= -->
+            <div class="tab-pane fade" id="preprocessing" role="tabpanel"
+                aria-labelledby="preprocessing-tab">
 
-        <div class="row g-3">
-            {% for feature in features %}
-            <div class="col-lg-6">
-                <div class="mapping-card">
-                    <div class="fw-semibold mb-2">{{ feature }}</div>
-                    {% for item in mappings[feature] %}
-                    <span class="mapping-item"><span>{{ item.category }}</span><strong>{{ item.value }}</strong></span>
+                <div class="section-heading">
+                    <h5><i class="bi bi-sliders me-2"></i>Preprocessing</h5>
+                    <p>Persiapan dan transformasi data sebelum proses analisis.</p>
+                </div>
+
+                <div class="alert alert-light border mt-3">
+                    <div class="fw-semibold mb-2">
+                        Proses preprocessing dilakukan untuk mempersiapkan data sebelum digunakan
+                        dalam analisis dan pemodelan.
+                    </div>
+                    <ul class="mb-0">
+                        <li>Konversi data numerik menjadi kategori.</li>
+                        <li>Pembentukan skor perilaku berdasarkan indikator perilaku siswa.</li>
+                        <li>Penentuan kategori nilai semester, kehadiran, dan ekstrakurikuler.</li>
+                        <li>Penentuan label prestasi siswa menjadi Tinggi, Sedang, atau Rendah.</li>
+                    </ul>
+                </div>
+
+                <div class="row g-3 mb-3 mt-1">
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <span>Total Data</span>
+                            <strong>{{ total_data }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <span>Jumlah Fitur</span>
+                            <strong>{{ feature_count }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <span>Label Output</span>
+                            <strong>Tinggi / Sedang / Rendah</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle small mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                {% for c in preprocessing_columns %}
+                                <th>{{ c|replace('_',' ')|title }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in preprocessing_preview %}
+                            <tr>
+                                {% for c in preprocessing_columns %}
+                                <td>{{ row[c] }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- =================================================
+                 3. DISTRIBUSI LABEL
+                 ================================================= -->
+            <div class="tab-pane fade" id="distribusi-label" role="tabpanel"
+                aria-labelledby="distribusi-label-tab">
+
+                <div class="section-heading">
+                    <h5><i class="bi bi-bar-chart me-2"></i>Distribusi Label Prestasi</h5>
+                    <p>Distribusi jumlah siswa pada setiap kategori prestasi sebelum proses modeling.</p>
+                </div>
+
+                <div class="chart-box">
+                    <canvas id="labelChart"></canvas>
+                </div>
+
+                <div class="table-responsive mt-3">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Label</th>
+                                <th>Jumlah Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for label in ['Tinggi','Sedang','Rendah'] %}
+                            <tr>
+                                <td>{{ label }}</td>
+                                <td>{{ label_counts[label] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-light border mt-3 mb-0">
+                    <strong>Interpretasi:</strong>
+                    Kategori <strong>{{ mayoritas_label }}</strong> memiliki jumlah data
+                    terbanyak, yaitu <strong>{{ mayoritas_jumlah }}</strong> siswa.
+                    Sedangkan kategori <strong>{{ minoritas_label }}</strong> memiliki jumlah
+                    data paling sedikit, yaitu <strong>{{ minoritas_jumlah }}</strong> siswa.
+                </div>
+            </div>
+
+            <!-- =================================================
+                 4. ANALISIS FAKTOR
+                 ================================================= -->
+            <div class="tab-pane fade" id="analisis-faktor" role="tabpanel"
+                aria-labelledby="analisis-faktor-tab">
+
+                <div class="section-heading">
+                    <h5><i class="bi bi-search me-2"></i>Analisis Faktor</h5>
+                    <p>Hubungan setiap fitur dengan label prestasi siswa.</p>
+                </div>
+
+                <ul class="nav nav-tabs inner-tabs mt-3" id="factorTabs" role="tablist">
+                    {% for feature in features %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if loop.first %}active{% endif %}"
+                            data-bs-toggle="tab" data-bs-target="#factor-{{ loop.index }}"
+                            type="button" role="tab">
+                            {{ feature }}
+                        </button>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <div class="tab-content pt-3">
+                    {% for feature in features %}
+                    <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
+                        id="factor-{{ loop.index }}" role="tabpanel">
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>{{ feature }}</th>
+                                        <th>Tinggi</th>
+                                        <th>Sedang</th>
+                                        <th>Rendah</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in factor_analysis[feature]['rows'] %}
+                                    <tr>
+                                        <td>{{ row['category'] }}</td>
+                                        <td>{{ '%.2f'|format(row['Tinggi'] * 100) }}%</td>
+                                        <td>{{ '%.2f'|format(row['Sedang'] * 100) }}%</td>
+                                        <td>{{ '%.2f'|format(row['Rendah'] * 100) }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="alert alert-light border mb-0">
+                            Kecenderungan kategori:
+                            <strong>{{ factor_analysis[feature]['dominant'] }}</strong>
+                        </div>
+
+                        <div class="factor-heatmap mt-3">
+                            <div class="fw-semibold mb-2">Visualisasi Hubungan Kategori</div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered text-center mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Kategori</th>
+                                            <th>Tinggi</th>
+                                            <th>Sedang</th>
+                                            <th>Rendah</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in factor_analysis[feature]['rows'] %}
+                                        <tr>
+                                            <th>{{ row.category }}</th>
+                                            <td style="background-color: rgba(13,110,253,{{ row.Tinggi }});">
+                                                {{ '%.2f'|format(row.Tinggi * 100) }}%
+                                            </td>
+                                            <td style="background-color: rgba(13,110,253,{{ row.Sedang }});">
+                                                {{ '%.2f'|format(row.Sedang * 100) }}%
+                                            </td>
+                                            <td style="background-color: rgba(13,110,253,{{ row.Rendah }});">
+                                                {{ '%.2f'|format(row.Rendah * 100) }}%
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
-            {% endfor %}
-        </div>
-        <div class="row g-3 mt-3">
-            <div class="col-md-6">
-                <div class="stat-card">
-                    <span>Total Fitur Ter-encode</span>
-                    <strong>{{ features|length }}</strong>
+
+            <!-- =================================================
+                 5. ENCODING
+                 ================================================= -->
+            <div class="tab-pane fade" id="encoding" role="tabpanel"
+                aria-labelledby="encoding-tab">
+
+                <div class="section-heading">
+                    <h5><i class="bi bi-arrow-left-right me-2"></i>Encoding</h5>
+                    <p>Mengubah data kategorikal menjadi bentuk numerik menggunakan Ordinal Encoding.</p>
+                </div>
+
+                <div class="row g-3 mt-1">
+                    {% for feature in features %}
+                    <div class="col-lg-6">
+                        <div class="mapping-card">
+                            <div class="fw-semibold mb-2">{{ feature }}</div>
+                            {% for item in mappings[feature] %}
+                            <span class="mapping-item">
+                                <span>{{ item.category }}</span>
+                                <strong>{{ item.value }}</strong>
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <div class="stat-card">
+                            <span>Total Fitur Ter-encode</span>
+                            <strong>{{ features|length }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold mt-4">Hasil Encoding</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                {% for c in encoded_columns %}
+                                <th>{{ c }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in encoded_preview %}
+                            <tr>
+                                {% for c in encoded_columns %}
+                                <td>{{ row[c] }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-muted small">
+                    Representasi angka digunakan sebagai input numerik untuk model Categorical Naive Bayes.
                 </div>
             </div>
-        </div>
-        <h6 class="fw-bold mt-4">Hasil Encoding</h6>
-        <div class="table-responsive">
-            <table class="table table-sm table-bordered align-middle">
-                <thead class="table-light">
-                    <tr>{% for c in encoded_columns %}<th>{{ c }}</th>{% endfor %}</tr>
-                </thead>
-                <tbody>{% for row in encoded_preview %}<tr>{% for c in encoded_columns %}<td>{{ row[c] }}</td>{% endfor
-                        %}</tr>{% endfor %}</tbody>
-            </table>
-        </div>
-        <div class="text-muted small">Representasi angka digunakan sebagai input numerik untuk model Categorical Naive
-            Bayes.</div>
-    </div>
-</div>
 
-<!-- SPLIT -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-4">
-        <h5 class="fw-bold"><i class="bi bi-diagram-3 me-2"></i>Split Data</h5>
-        <p class="text-muted">Pembagian dataset menggunakan rasio 70:30 dengan random state 42.</p>
-        <div class="alert alert-light border mt-3">
-            Dataset dibagi menjadi dua bagian, yaitu 70% data training
-            dan 30% data testing. Data training digunakan untuk melatih
-            model Categorical Naive Bayes, sedangkan data testing digunakan
-            untuk mengevaluasi kemampuan model dalam melakukan klasifikasi.
-        </div>
-        <div class="row g-3 mb-4">
-            <div class="col-md-6">
-                <div class="stat-card"><span>Data Training</span><strong>{{ train_size }}</strong></div>
-            </div>
-            <div class="col-md-6">
-                <div class="stat-card"><span>Data Testing</span><strong>{{ test_size }}</strong></div>
-            </div>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-sm table-bordered">
-                <thead class="table-light">
-                    <tr>
-                        <th>Label</th>
-                        <th>Training</th>
-                        <th>Testing</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in split_distribution %}<tr>
-                        <td>{{ row.label }}</td>
-                        <td>{{ row.training }}</td>
-                        <td>{{ row.testing }}</td>
-                        <td>{{ row.total }}</td>
-                    </tr>{% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="chart-box"><canvas id="splitChart"></canvas></div>
-    </div>
-</div>
+            <!-- =================================================
+                 6. SPLIT DATA
+                 ================================================= -->
+            <div class="tab-pane fade" id="split" role="tabpanel"
+                aria-labelledby="split-tab">
 
-<!-- FREKUENSI -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-4">
-        <h5 class="fw-bold"><i class="bi bi-table me-2"></i>Distribusi Frekuensi Atribut</h5>
-        <p class="text-muted">Frekuensi kategori pada data training sebagai dasar perhitungan likelihood Categorical
-            Naive Bayes.</p>
-        <div class="alert alert-light border mt-3">
-            Distribusi frekuensi digunakan untuk melihat jumlah kemunculan
-            setiap kategori pada data training berdasarkan kelas prestasi.
-            Informasi ini menjadi dasar dalam perhitungan probabilitas
-            pada algoritma Categorical Naive Bayes.
-        </div>
-        <ul class="nav nav-tabs" role="tablist">
-            {% for feature in features %}<li class="nav-item"><button
-                    class="nav-link {% if loop.first %}active{% endif %}" data-bs-toggle="tab"
-                    data-bs-target="#freq-{{ loop.index }}" type="button">{{ feature }}</button></li>{% endfor %}
-        </ul>
-        <div class="tab-content pt-3">
-            {% for feature in features %}<div class="tab-pane fade {% if loop.first %}show active{% endif %}"
-                id="freq-{{ loop.index }}">
+                <div class="section-heading">
+                    <h5><i class="bi bi-diagram-3 me-2"></i>Split Data</h5>
+                    <p>Pembagian dataset menggunakan rasio 70:30 dengan random state 42.</p>
+                </div>
+
+                <div class="alert alert-light border mt-3">
+                    Dataset dibagi menjadi dua bagian, yaitu 70% data training
+                    dan 30% data testing. Data training digunakan untuk melatih
+                    model Categorical Naive Bayes, sedangkan data testing digunakan
+                    untuk mengevaluasi kemampuan model dalam melakukan klasifikasi.
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="stat-card">
+                            <span>Data Training</span>
+                            <strong>{{ train_size }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="stat-card">
+                            <span>Data Testing</span>
+                            <strong>{{ test_size }}</strong>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="table-responsive">
                     <table class="table table-sm table-bordered">
                         <thead class="table-light">
                             <tr>
-                                <th>{{ feature }}</th>
-                                <th>Tinggi</th>
-                                <th>Sedang</th>
-                                <th>Rendah</th>
+                                <th>Label</th>
+                                <th>Training</th>
+                                <th>Testing</th>
                                 <th>Total</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for row in frequency[feature] %}<tr>
-                                <td>{{ row.category }}</td>
-                                <td>{{ row.Tinggi }}</td>
-                                <td>{{ row.Sedang }}</td>
-                                <td>{{ row.Rendah }}</td>
-                                <td>{{ row.Total }}</td>
-                            </tr>{% endfor %}
+                            {% for row in split_distribution %}
+                            <tr>
+                                <td>{{ row.label }}</td>
+                                <td>{{ row.training }}</td>
+                                <td>{{ row.testing }}</td>
+                                <td>{{ row.total }}</td>
+                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
-            </div>{% endfor %}
-        </div>
-    </div>
-</div>
 
-<!-- TRAINING -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-4">
-        <h5 class="fw-bold"><i class="bi bi-cpu me-2"></i>Training Model</h5>
-        <div class="alert alert-success d-flex align-items-center mb-0"><i class="bi bi-check-circle me-2"></i>Model
-            Categorical Naive Bayes berhasil dilatih menggunakan data training.</div>
-    </div>
-</div>
-
-<!-- EVALUASI -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-4">
-        <h5 class="fw-bold"><i class="bi bi-clipboard-data me-2"></i>Evaluasi Model</h5>
-        <div class="metric-card text-center mb-4"><span>Akurasi Model</span><strong>{{ '%.2f'|format(accuracy * 100)
-                }}%</strong></div>
-
-        <h6 class="fw-bold">Confusion Matrix</h6>
-        <div class="table-responsive">
-            <table class="table table-bordered text-center confusion-table">
-                <thead class="table-light">
-                    <tr>
-                        <th>Aktual / Prediksi</th>
-                        <th>Tinggi</th>
-                        <th>Sedang</th>
-                        <th>Rendah</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in confusion_matrix %}<tr>
-                        <th class="table-light">{{ labels[loop.index0] }}</th>{% for value in row %}
-                        <td class="heat-cell" style="
-        background-color:
-        rgba(13, 110, 253,
-        {{ (value / test_total) if test_total else 0 }});
-    ">
-                            {{ value }}
-                        </td>
-                        {% endfor %}
-                    </tr>{% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="text-muted small mb-4">Prediksi benar berada pada diagonal utama. Total prediksi benar: {{ correct
-            }} dari {{ test_total }} data testing.</div>
-
-        <div class="alert alert-light border mb-4">
-            <strong>Cara membaca:</strong>
-            Nilai pada diagonal utama menunjukkan jumlah prediksi
-            yang berhasil diklasifikasikan sesuai dengan kelas sebenarnya.
-            Nilai di luar diagonal menunjukkan data yang diklasifikasikan
-            ke kelas yang berbeda dari kelas aktual.
-        </div>
-
-        <h6 class="fw-bold">Classification Report</h6>
-        <div class="table-responsive">
-            <table class="table table-sm table-bordered">
-                <thead class="table-light">
-                    <tr>
-                        <th>Kelas</th>
-                        <th>Precision</th>
-                        <th>Recall</th>
-                        <th>F1-Score</th>
-                        <th>Support</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in classification_report %}<tr>
-                        <td>{{ row.label }}</td>
-                        <td>{{ '%.2f'|format(row.precision) }}</td>
-                        <td>{{ '%.2f'|format(row.recall) }}</td>
-                        <td>{{ '%.2f'|format(row.f1_score) }}</td>
-                        <td>{{ row.support }}</td>
-                    </tr>{% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="row g-3 mt-2">
-            <div class="col-md-6">
-                <div class="mini-metric"><span>Weighted Precision</span><strong>{{ '%.2f'|format(weighted_precision)
-                        }}</strong></div>
-            </div>
-            <div class="col-md-6">
-                <div class="mini-metric"><span>Weighted Recall</span><strong>{{ '%.2f'|format(weighted_recall)
-                        }}</strong></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- EVALUASI PER KELAS -->
-<div class="card border-0 shadow-sm mb-5">
-    <div class="card-body p-4">
-        <h5 class="fw-bold"><i class="bi bi-bar-chart-line me-2"></i>Evaluasi per Kelas</h5>
-        <p class="text-muted mb-0">
-            Evaluasi dilakukan untuk melihat performa model pada masing-masing
-            kategori prestasi siswa.
-        </p>
-        <div class="row g-3 mt-1">
-            {% for row in classification_report %}
-            <div class="col-md-4">
-                <div class="class-metric">
-                    <h6>Kelas {{ row.label }}</h6>
-                    <div><span>Precision</span><strong>{{ '%.2f'|format(row.precision) }}</strong></div>
-                    <div><span>Recall</span><strong>{{ '%.2f'|format(row.recall) }}</strong></div>
-                    <div><span>F1-Score</span><strong>{{ '%.2f'|format(row.f1_score) }}</strong></div>
+                <div class="chart-box">
+                    <canvas id="splitChart"></canvas>
                 </div>
             </div>
-            {% endfor %}
+
+            <!-- =================================================
+                 7. FREKUENSI
+                 ================================================= -->
+            <div class="tab-pane fade" id="frekuensi" role="tabpanel"
+                aria-labelledby="frekuensi-tab">
+
+                <div class="section-heading">
+                    <h5><i class="bi bi-table me-2"></i>Distribusi Frekuensi Atribut</h5>
+                    <p>Frekuensi kategori pada data training sebagai dasar perhitungan likelihood Categorical Naive Bayes.</p>
+                </div>
+
+                <div class="alert alert-light border mt-3">
+                    Distribusi frekuensi digunakan untuk melihat jumlah kemunculan
+                    setiap kategori pada data training berdasarkan kelas prestasi.
+                    Informasi ini menjadi dasar dalam perhitungan probabilitas
+                    pada algoritma Categorical Naive Bayes.
+                </div>
+
+                <ul class="nav nav-tabs inner-tabs" id="frequencyTabs" role="tablist">
+                    {% for feature in features %}
+                    <li class="nav-item">
+                        <button class="nav-link {% if loop.first %}active{% endif %}"
+                            data-bs-toggle="tab" data-bs-target="#freq-{{ loop.index }}"
+                            type="button" role="tab">
+                            {{ feature }}
+                        </button>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <div class="tab-content pt-3">
+                    {% for feature in features %}
+                    <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
+                        id="freq-{{ loop.index }}" role="tabpanel">
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>{{ feature }}</th>
+                                        <th>Tinggi</th>
+                                        <th>Sedang</th>
+                                        <th>Rendah</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in frequency[feature] %}
+                                    <tr>
+                                        <td>{{ row.category }}</td>
+                                        <td>{{ row.Tinggi }}</td>
+                                        <td>{{ row.Sedang }}</td>
+                                        <td>{{ row.Rendah }}</td>
+                                        <td>{{ row.Total }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- =================================================
+                 8. TRAINING
+                 ================================================= -->
+            <div class="tab-pane fade" id="training" role="tabpanel"
+                aria-labelledby="training-tab">
+
+                <div class="section-heading">
+                    <h5><i class="bi bi-cpu me-2"></i>Training Model</h5>
+                    <p>Proses pelatihan model menggunakan data training yang telah dipersiapkan.</p>
+                </div>
+
+                <div class="alert alert-success d-flex align-items-center mt-3 mb-0">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Model Categorical Naive Bayes berhasil dilatih menggunakan data training.
+                </div>
+            </div>
+
+            <!-- =================================================
+                 9. EVALUASI
+                 ================================================= -->
+            <div class="tab-pane fade" id="evaluasi" role="tabpanel"
+                aria-labelledby="evaluasi-tab">
+
+                <div class="section-heading">
+                    <h5><i class="bi bi-clipboard-data me-2"></i>Evaluasi Model</h5>
+                    <p>Evaluasi dilakukan untuk mengetahui performa model dalam melakukan klasifikasi.</p>
+                </div>
+
+                <div class="metric-card text-center mt-3 mb-4">
+                    <span>Akurasi Model</span>
+                    <strong>{{ '%.2f'|format(accuracy * 100) }}%</strong>
+                </div>
+
+                <h6 class="fw-bold">Confusion Matrix</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered text-center confusion-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Aktual / Prediksi</th>
+                                <th>Tinggi</th>
+                                <th>Sedang</th>
+                                <th>Rendah</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in confusion_matrix %}
+                            <tr>
+                                <th class="table-light">{{ labels[loop.index0] }}</th>
+                                {% for value in row %}
+                                <td class="heat-cell" style="
+                                    background-color: rgba(13, 110, 253,
+                                    {{ (value / test_total) if test_total else 0 }});
+                                ">
+                                    {{ value }}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-muted small mb-4">
+                    Prediksi benar berada pada diagonal utama.
+                    Total prediksi benar: {{ correct }} dari {{ test_total }} data testing.
+                </div>
+
+                <div class="alert alert-light border mb-4">
+                    <strong>Cara membaca:</strong>
+                    Nilai pada diagonal utama menunjukkan jumlah prediksi
+                    yang berhasil diklasifikasikan sesuai dengan kelas sebenarnya.
+                    Nilai di luar diagonal menunjukkan data yang diklasifikasikan
+                    ke kelas yang berbeda dari kelas aktual.
+                </div>
+
+                <h6 class="fw-bold">Classification Report</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Kelas</th>
+                                <th>Precision</th>
+                                <th>Recall</th>
+                                <th>F1-Score</th>
+                                <th>Support</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in classification_report %}
+                            <tr>
+                                <td>{{ row.label }}</td>
+                                <td>{{ '%.2f'|format(row.precision) }}</td>
+                                <td>{{ '%.2f'|format(row.recall) }}</td>
+                                <td>{{ '%.2f'|format(row.f1_score) }}</td>
+                                <td>{{ row.support }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <div class="mini-metric">
+                            <span>Weighted Precision</span>
+                            <strong>{{ '%.2f'|format(weighted_precision) }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mini-metric">
+                            <span>Weighted Recall</span>
+                            <strong>{{ '%.2f'|format(weighted_recall) }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <h5 class="fw-bold mb-1">
+                    <i class="bi bi-bar-chart-line me-2"></i>Evaluasi per Kelas
+                </h5>
+                <p class="text-muted mb-3">
+                    Evaluasi performa model pada masing-masing kategori prestasi siswa.
+                </p>
+
+                <div class="row g-3">
+                    {% for row in classification_report %}
+                    <div class="col-md-4">
+                        <div class="class-metric">
+                            <h6>Kelas {{ row.label }}</h6>
+                            <div>
+                                <span>Precision</span>
+                                <strong>{{ '%.2f'|format(row.precision) }}</strong>
+                            </div>
+                            <div>
+                                <span>Recall</span>
+                                <strong>{{ '%.2f'|format(row.recall) }}</strong>
+                            </div>
+                            <div>
+                                <span>F1-Score</span>
+                                <strong>{{ '%.2f'|format(row.f1_score) }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </div>
         </div>
     </div>
 </div>
@@ -475,8 +668,8 @@
 {% if not error %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-
     const labelData = {{ label_counts | tojson }};
+
     new Chart(document.getElementById('labelChart'), {
         type: 'bar',
         data: {
@@ -492,33 +685,101 @@
             responsive: true,
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
         }
     });
 
     const splitData = {{ split_distribution | tojson }};
+
     new Chart(document.getElementById('splitChart'), {
         type: 'bar',
         data: {
             labels: splitData.map(x => x.label),
             datasets: [
-                { label: 'Training', data: splitData.map(x => x.training), backgroundColor: '#0d6efd', borderRadius: 5 },
-                { label: 'Testing', data: splitData.map(x => x.testing), backgroundColor: '#6c757d', borderRadius: 5 }
+                {
+                    label: 'Training',
+                    data: splitData.map(x => x.training),
+                    backgroundColor: '#0d6efd',
+                    borderRadius: 5
+                },
+                {
+                    label: 'Testing',
+                    data: splitData.map(x => x.testing),
+                    backgroundColor: '#6c757d',
+                    borderRadius: 5
+                }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
         }
     });
 </script>
 {% endif %}
+
 <style>
-    .section-title-row {
+    .process-card {
+        border-radius: 12px;
+    }
+
+    .process-tabs {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: thin;
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 0;
+    }
+
+    .process-tabs .nav-item {
+        flex: 0 0 auto;
+    }
+
+    .process-tabs .nav-link {
+        white-space: nowrap;
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+
+    .process-tabs .nav-link.active {
+        font-weight: 600;
+    }
+
+    .inner-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: thin;
+    }
+
+    .inner-tabs .nav-item {
+        flex: 0 0 auto;
+    }
+
+    .inner-tabs .nav-link {
+        white-space: nowrap;
+    }
+
+    .section-heading h5 {
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .section-heading p {
+        color: #6c757d;
+        margin-bottom: 0;
     }
 
     .stat-card,
@@ -638,6 +899,17 @@
 
     .alert li {
         margin-bottom: 4px;
+    }
+
+    @media (max-width: 768px) {
+        .process-tabs .nav-link {
+            font-size: 13px;
+            padding: 9px 11px;
+        }
+
+        .chart-box {
+            height: 240px;
+        }
     }
 </style>
 
